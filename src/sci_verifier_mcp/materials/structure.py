@@ -188,11 +188,13 @@ def validate_crystal_structure(
                 # If spglib is installed, run symmetry analysis
                 try:
                     import spglib
-                    cell = (lattice_matrix, coords_frac, [hash(s) % 100 for s in species])
+                    species_map = {sp: idx + 1 for idx, sp in enumerate(sorted(set(species)))}
+                    numbers = [species_map[s] for s in species]
+                    cell = (lattice_matrix, coords_frac, numbers)
                     dataset = spglib.get_symmetry_dataset(cell, symprec=1e-2)
-                    if dataset:
-                        computed_sg_number = int(dataset["number"])
-                        computed_sg_symbol = str(dataset["international"])
+                    if dataset is not None:
+                        computed_sg_number = int(getattr(dataset, "number", 0) or dataset["number"])
+                        computed_sg_symbol = str(getattr(dataset, "international", "") or dataset["international"])
                 except Exception:
                     pass
 

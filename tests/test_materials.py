@@ -29,6 +29,31 @@ _atom_site_fract_x
 _atom_site_fract_y
 _atom_site_fract_z
 Si1 Si 0.00000 0.00000 0.00000
+Si2 Si 0.00000 0.50000 0.50000
+Si3 Si 0.50000 0.00000 0.50000
+Si4 Si 0.50000 0.50000 0.00000
+Si5 Si 0.25000 0.25000 0.25000
+Si6 Si 0.25000 0.75000 0.75000
+Si7 Si 0.75000 0.25000 0.75000
+Si8 Si 0.75000 0.75000 0.25000
+"""
+
+SAMPLE_MISMATCH_SG_CIF = """
+data_Si_incomplete
+_cell_length_a                   5.43
+_cell_length_b                   5.43
+_cell_length_c                   5.43
+_cell_angle_alpha                90.00
+_cell_angle_beta                 90.00
+_cell_angle_gamma                90.00
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+Si1 Si 0.00000 0.00000 0.00000
 Si2 Si 0.25000 0.25000 0.25000
 """
 
@@ -56,6 +81,14 @@ def test_valid_crystal_structure():
     res = validate_crystal_structure(SAMPLE_VALID_CIF, format="cif", claimed_spacegroup=227)
     assert res.status == VerificationStatus.VERIFIED
     assert "Crystal structure valid" in res.summary
+    assert res.details["computed_spacegroup_number"] == 227
+
+
+def test_spacegroup_mismatch_rejection():
+    # Incomplete 2-atom cubic cell has R3m (#160), not Fd-3m (#227)
+    res = validate_crystal_structure(SAMPLE_MISMATCH_SG_CIF, format="cif", claimed_spacegroup=227)
+    assert res.status == VerificationStatus.FAILED
+    assert "symmetry mismatch" in res.summary.lower()
 
 
 def test_overlapping_atoms_rejection():
