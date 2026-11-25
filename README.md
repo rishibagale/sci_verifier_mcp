@@ -61,53 +61,181 @@ All API keys are optional. When unset, corresponding online tools gracefully deg
 
 ---
 
-## Client Configurations
+## Universal Client & Agent Configurations
 
-### 1. Claude Desktop
-Add to your `claude_desktop_config.json`:
+You can configure SciVerifier for any AI coding assistant automatically or by copying the client configuration snippets below.
+
+### Automatic One-Command Setup
+Automatically detect all installed coding agents on your machine and merge SciVerifier into their active configurations:
+
+```bash
+# Auto-detect and configure all installed agents (Cline, OpenCode, Cursor, Windsurf, Zed, Claude)
+sci-verifier-config --all
+
+# Or print configuration for a specific target without modifying files
+sci-verifier-config --target cline --print
+```
+
+---
+
+### Zero-Install Remote Execution (via `uvx`)
+Any agent can run SciVerifier globally without cloning or installing dependencies locally:
+
+```json
+{
+  "command": "uvx",
+  "args": ["--from", "git+https://github.com/rishibagale/sci_verifier_mcp.git", "sci-verifier-mcp"]
+}
+```
+
+---
+
+### Client-Specific Configurations
+
+#### 1. Cline & Roo Code (VS Code Extension)
+In `cline_mcp_settings.json`:
 
 ```json
 {
   "mcpServers": {
     "sci-verifier": {
       "command": "uv",
-      "args": [
-        "--directory",
-        "/path/to/sci-verifier-mcp",
-        "run",
-        "sci-verifier-mcp"
-      ],
+      "args": ["--directory", "/path/to/sci-verifier-mcp", "run", "sci-verifier-mcp"],
       "env": {
-        "MP_API_KEY": "your_materials_project_key",
-        "CROSSREF_MAILTO": "your_email@example.com"
+        "MP_API_KEY": ""
+      },
+      "disabled": false,
+      "autoApprove": [
+        "check_equation_equivalence",
+        "check_dimensional_analysis",
+        "validate_crystal_structure",
+        "check_stoichiometry_and_valence",
+        "verify_citation"
+      ]
+    }
+  }
+}
+```
+
+#### 2. OpenCode (CLI & Editor Agent)
+In `opencode.json` (project root) or `~/.config/opencode/mcp.json`:
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "sci-verifier": {
+        "command": "uv",
+        "args": ["--directory", "/path/to/sci-verifier-mcp", "run", "sci-verifier-mcp"],
+        "env": {
+          "MP_API_KEY": ""
+        }
       }
     }
   }
 }
 ```
 
-### 2. Cursor
-In Cursor Settings $\to$ Features $\to$ MCP Servers $\to$ **Add New MCP Server**:
-- **Name**: `sci-verifier`
-- **Type**: `command`
-- **Command**: `uv --directory /path/to/sci-verifier-mcp run sci-verifier-mcp`
-
-### 3. Gemini CLI / Antigravity
-Add to your `gemini.json` / Antigravity MCP server settings:
+#### 3. Cursor IDE
+This repository includes a project-level [`.cursor/mcp.json`](file:///.cursor/mcp.json) that Cursor detects automatically when the folder is opened. For global configuration in `~/.cursor/mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "sci-verifier": {
-      "command": "python",
-      "args": ["-m", "sci_verifier_mcp.server"],
-      "cwd": "/path/to/sci-verifier-mcp",
+      "command": "uv",
+      "args": ["--directory", "/path/to/sci-verifier-mcp", "run", "sci-verifier-mcp"],
       "env": {
-        "MP_API_KEY": "your_materials_project_key"
+        "MP_API_KEY": ""
       }
     }
   }
 }
+```
+
+#### 4. Windsurf (Codeium)
+In `~/.codeium/windsurf/mcp_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "sci-verifier": {
+      "command": "uv",
+      "args": ["--directory", "/path/to/sci-verifier-mcp", "run", "sci-verifier-mcp"],
+      "env": {
+        "MP_API_KEY": ""
+      }
+    }
+  }
+}
+```
+
+#### 5. Zed Editor
+In `settings.json` (or `.zed/settings.json`):
+
+```json
+{
+  "context_servers": {
+    "sci-verifier": {
+      "command": {
+        "path": "uv",
+        "args": ["--directory", "/path/to/sci-verifier-mcp", "run", "sci-verifier-mcp"],
+        "env": {
+          "MP_API_KEY": ""
+        }
+      }
+    }
+  }
+}
+```
+
+#### 6. Claude Desktop
+In `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "sci-verifier": {
+      "command": "uv",
+      "args": ["--directory", "/path/to/sci-verifier-mcp", "run", "sci-verifier-mcp"],
+      "env": {
+        "MP_API_KEY": ""
+      }
+    }
+  }
+}
+```
+
+#### 7. Continue.dev
+In `~/.continue/config.json`:
+
+```json
+{
+  "mcpServers": [
+    {
+      "name": "sci-verifier",
+      "command": "uv",
+      "args": ["--directory", "/path/to/sci-verifier-mcp", "run", "sci-verifier-mcp"]
+    }
+  ]
+}
+```
+
+---
+
+## Python Multi-Agent Frameworks (LangGraph, CrewAI, AutoGen)
+
+SciVerifier can be used directly as a Python library in multi-agent pipelines:
+
+```python
+from sci_verifier_mcp.frameworks import get_all_tools, get_langchain_tools
+
+# 1. Raw Python callable dictionary
+tools = get_all_tools()
+result = tools["check_equation_equivalence"](lhs="E", rhs="m * c**2")
+
+# 2. LangChain / LangGraph / CrewAI tools
+langchain_tools = get_langchain_tools()
 ```
 
 ---

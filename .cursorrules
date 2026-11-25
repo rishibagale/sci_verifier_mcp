@@ -1,0 +1,9 @@
+# Cursor Scientific Verification Rules
+
+When reviewing, generating, or debugging mathematical equations, physics models, or materials science data:
+- Verify algebraic equivalence via the `check_equation_equivalence` MCP tool.
+- Verify dimensions and units via `check_dimensional_analysis` (supports SI, natural units, and materials units).
+- Verify crystal structures via `validate_crystal_structure` (minimum atomic distance >= 0.7 A).
+- Verify stoichiometry and reaction balance via `check_stoichiometry_and_valence`.
+- Eliminate hallucinated citations via `verify_citation` and `audit_bibliography`.
+- Reject formal proofs with `sorry` or `admit` via `verify_lean4_proof`.

@@ -315,7 +315,16 @@ Follow this strict verification procedure using the available SciVerifier MCP to
 
 
 def main():
-    """Run FastMCP server over standard I/O (stdio)."""
+    """Run FastMCP server over standard I/O (stdio) or invoke installer/config CLI."""
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] in ("install", "--install", "config", "--config"):
+        from sci_verifier_mcp.installer import run_installer_cli
+        cmd = sys.argv[1]
+        args = sys.argv[2:]
+        if "config" in cmd and "--print" not in args:
+            args = ["--print"] + args
+        sys.exit(run_installer_cli(args))
+
     mcp.run(transport="stdio")
 
 

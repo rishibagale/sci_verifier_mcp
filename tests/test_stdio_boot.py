@@ -1,6 +1,7 @@
 """End-to-end test verifying the FastMCP server boots over stdio and responds to JSON-RPC tools/list."""
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -12,6 +13,9 @@ def test_server_stdio_handshake():
     if not python_exe.exists():
         python_exe = Path(sys.executable)
 
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(root_dir / "src")
+
     # Launch server as subprocess over stdio
     proc = subprocess.Popen(
         [str(python_exe), "-m", "sci_verifier_mcp.server"],
@@ -19,6 +23,7 @@ def test_server_stdio_handshake():
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         cwd=str(root_dir),
+        env=env,
         text=True,
     )
 

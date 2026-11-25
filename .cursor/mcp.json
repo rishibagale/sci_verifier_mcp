@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "sci-verifier": {
+      "command": "uv",
+      "args": ["run", "sci-verifier-mcp"],
+      "env": {
+        "MP_API_KEY": ""
+      }
+    }
+  }
+}

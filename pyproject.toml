@@ -36,8 +36,10 @@ dev = [
 
 [project.scripts]
 sci-verifier-mcp = "sci_verifier_mcp.server:main"
+sci-verifier-config = "sci_verifier_mcp.installer:run_installer_cli"
 
 [tool.pytest.ini_options]
+pythonpath = ["src"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 markers = [

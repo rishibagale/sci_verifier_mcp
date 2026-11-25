@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "sci-verifier": {
+      "command": "uv",
+      "args": ["run", "sci-verifier-mcp"],
+      "env": {
+        "MP_API_KEY": ""
+      },
+      "disabled": false,
+      "autoApprove": [
+        "check_equation_equivalence",
+        "check_dimensional_analysis",
+        "validate_crystal_structure",
+        "check_stoichiometry_and_valence",
+        "verify_citation"
+      ]
+    }
+  }
+}
