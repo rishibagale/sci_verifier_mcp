@@ -1,9 +1,51 @@
+# Virtual environments
 .venv/
+venv/
+env/
+ENV/
+
+# Python bytecode & build artifacts
 __pycache__/
-*.pyc
-*.pyo
-.pytest_cache/
-.cache/
+*.py[cod]
+*$py.class
+*.pyd
+*.so
+*.whl
 dist/
 build/
+develop-eggs/
 *.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Testing, linting & type-checking caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.coverage
+htmlcov/
+
+# Local caches, databases & backups
+.cache/
+*.db
+*.sqlite
+*.sqlite3
+*.bak
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Editor & OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
