@@ -318,7 +318,13 @@ def validate_crystal_structure(
             from ase.io import read as ase_read
 
             ase_fmt = "vasp" if fmt in ("poscar", "contcar", "vasp") else fmt
-            atoms_obj = ase_read(StringIO(clean_text), format=ase_fmt)
+            atoms_raw = ase_read(StringIO(clean_text), format=ase_fmt)
+            if isinstance(atoms_raw, list):
+                if not atoms_raw:
+                    raise ValueError("ASE parsed zero atomic frames.")
+                atoms_obj = atoms_raw[0]
+            else:
+                atoms_obj = atoms_raw
             lattice_matrix = np.array(atoms_obj.get_cell().array, dtype=float)
             coords_cart = np.array(atoms_obj.get_positions(), dtype=float)
             coords_frac = np.array(atoms_obj.get_scaled_positions(), dtype=float)

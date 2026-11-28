@@ -68,7 +68,13 @@ def relax_and_score_mlip(
 
     try:
         ase_fmt = "vasp" if format.lower() in ("poscar", "contcar", "vasp") else format.lower()
-        atoms = ase_read(StringIO(clean_text), format=ase_fmt)
+        atoms_raw = ase_read(StringIO(clean_text), format=ase_fmt)
+        if isinstance(atoms_raw, list):
+            if not atoms_raw:
+                raise ValueError("ASE parsed zero atomic frames.")
+            atoms = atoms_raw[0]
+        else:
+            atoms = atoms_raw
         atoms.calc = calc
         initial_energy = float(atoms.get_potential_energy())
         initial_forces = atoms.get_forces()
