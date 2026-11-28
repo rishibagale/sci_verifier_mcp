@@ -195,5 +195,30 @@ def test_mlip_graceful_fallback():
 
 
 def test_streamable_http_app_builds():
-    app = mcp.streamable_http_app()
+    from starlette.testclient import TestClient
+
+    app = mcp.streamable_http_app(json_response=True)
     assert app is not None
+    with TestClient(app, base_url="http://127.0.0.1:8000") as client:
+        resp = client.post(
+            "/mcp",
+            headers={
+                "Host": "127.0.0.1:8000",
+                "Accept": "application/json, text/event-stream",
+                "Content-Type": "application/json",
+            },
+            json={
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {"name": "http-test", "version": "1.0.0"},
+                },
+            },
+        )
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["id"] == 1
+        assert "result" in body

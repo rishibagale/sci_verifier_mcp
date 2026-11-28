@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.11", "3.12"]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install core & dev dependencies
+        run: |
+          uv venv --python ${{ matrix.python-version }}
+          uv pip install --python .venv --no-deps -e .
+          uv pip install --python .venv mcp sympy pint z3-solver httpx bibtexparser "antlr4-python3-runtime>=4.11,<4.12" pydantic spglib ase numpy pytest pytest-asyncio respx ruff mypy
+
+      - name: Lint with ruff
+        run: uv run --no-sync ruff check src tests
+
+      - name: Type-check with mypy
+        run: uv run --no-sync mypy src
+
+      - name: Compile check
+        run: uv run --no-sync python -m compileall -q src tests
+
+      - name: Run offline & stdio test suite
+        run: uv run --no-sync pytest -m "not live" -v

@@ -1,9 +1,8 @@
 # Cursor Scientific Verification Rules
 
-When reviewing, generating, or debugging mathematical equations, physics models, or materials science data:
-- Verify algebraic equivalence via the `check_equation_equivalence` MCP tool.
-- Verify dimensions and units via `check_dimensional_analysis` (supports SI, natural units, and materials units).
-- Verify crystal structures via `validate_crystal_structure` (minimum atomic distance >= 0.7 A).
-- Verify stoichiometry and reaction balance via `check_stoichiometry_and_valence`.
-- Eliminate hallucinated citations via `verify_citation` and `audit_bibliography`.
-- Reject formal proofs with `sorry` or `admit` via `verify_lean4_proof`.
+When reviewing, generating, or debugging mathematical equations, ODE/PDEs, simulation code, physics models, or materials science data:
+- Verify algebraic equivalence via `check_equation_equivalence`, differential ansatzes via `verify_ode_pde_solution`, and asymptotic regimes via `check_limiting_cases`.
+- Verify dimensions and units via `check_dimensional_analysis` (SI, natural units, materials units) and numerical trajectories/matrices via `verify_simulation_invariants`.
+- Look up Mathlib4/PhysLib theorems with `search_lean_premises` before writing Lean 4 proofs, and verify via `verify_lean4_proof` (zero tolerance for `sorry`, `admit`, or undeclared `axiom`).
+- Verify crystal structures via `validate_crystal_structure` (minimum atomic distance >= 0.7 A, plausible density, BVS, space group), stoichiometry/reactions via `check_stoichiometry_and_valence`, Born/phonon stability via `check_elastic_and_phonon_stability`, and novelty via `check_novel_structure_prior_art`.
+- Eliminate hallucinated, retracted, or paper-washed citations via `verify_citation`, `audit_bibliography`, and `verify_claim_against_paper`, and export verification trails with `export_audit_certificate`.

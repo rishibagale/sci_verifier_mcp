@@ -1,8 +1,8 @@
 # Windsurf Cascade Rules for Scientific Verification
 
 For any math, physics, or materials science task:
-- Verify mathematical steps using `check_equation_equivalence` rather than assuming algebraic accuracy.
-- Verify dimensional consistency with `check_dimensional_analysis`.
-- Reject crystal structures with interatomic distance < 0.7 A using `validate_crystal_structure`.
-- Confirm reaction balance and electroneutrality using `check_stoichiometry_and_valence`.
-- Audit DOIs and citations using `verify_citation` and `audit_bibliography`.
+- Verify algebraic steps using `check_equation_equivalence`, differential solutions using `verify_ode_pde_solution`, and asymptotic regimes using `check_limiting_cases`.
+- Verify dimensional consistency with `check_dimensional_analysis` and simulation invariants (conservation, probability norm, PSD/unitarity, convergence order) with `verify_simulation_invariants`.
+- Search Mathlib4/PhysLib premises via `search_lean_premises` before writing Lean 4 proofs, and verify with `verify_lean4_proof` (no `sorry`/`admit`/undeclared `axiom`).
+- Reject unphysical crystal structures (< 0.7 A overlap, extreme density, BVS anomalies, symmetry mismatch) via `validate_crystal_structure`; verify reaction balance via `check_stoichiometry_and_valence` and Born/phonon stability via `check_elastic_and_phonon_stability`.
+- Audit DOIs, retraction status, and claim-to-abstract alignment using `verify_citation`, `audit_bibliography`, and `verify_claim_against_paper`, and export provenance with `export_audit_certificate`.

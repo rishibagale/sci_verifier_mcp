@@ -6,6 +6,7 @@ from pathlib import Path
 # Paths
 DEFAULT_CACHE_DIR = Path.home() / ".cache" / "sci_verifier_mcp"
 CACHE_DB_PATH = Path(os.getenv("CACHE_DB_PATH", str(DEFAULT_CACHE_DIR / "cache.db")))
+AUDIT_DB_PATH = Path(os.getenv("AUDIT_DB_PATH", str(DEFAULT_CACHE_DIR / "audit_log.sqlite")))
 
 # API Credentials & Contacts
 MP_API_KEY = os.getenv("MP_API_KEY", "")

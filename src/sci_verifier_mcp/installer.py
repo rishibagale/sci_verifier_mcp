@@ -14,9 +14,19 @@ REMOTE_UVX_ARGS = ["--from", "git+https://github.com/rishibagale/sci_verifier_mc
 AUTO_APPROVE_TOOLS = [
     "check_equation_equivalence",
     "check_dimensional_analysis",
+    "check_smt_claim",
+    "verify_ode_pde_solution",
+    "check_limiting_cases",
+    "verify_simulation_invariants",
+    "search_lean_premises",
     "validate_crystal_structure",
     "check_stoichiometry_and_valence",
+    "check_elastic_and_phonon_stability",
     "verify_citation",
+    "verify_claim_against_paper",
+    "find_similar_papers",
+    "track_recent_discoveries",
+    "export_audit_certificate",
 ]
 
 
