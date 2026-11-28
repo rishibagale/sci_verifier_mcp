@@ -3,6 +3,7 @@
 import asyncio
 import re
 from typing import Any
+
 import httpx
 
 from sci_verifier_mcp.core import config
@@ -42,7 +43,7 @@ def parse_bibtex_string(bibtex_str: str) -> list[dict[str, Any]]:
     matches = re.findall(entry_pattern, clean, re.DOTALL)
     entries = []
 
-    for entry_type, key, body in matches:
+    for _entry_type, key, body in matches:
         title_m = re.search(r"title\s*=\s*[\"{](.*?)[\"}]", body, re.IGNORECASE)
         author_m = re.search(r"author\s*=\s*[\"{](.*?)[\"}]", body, re.IGNORECASE)
         year_m = re.search(r"year\s*=\s*[\"{]?(\d{4})[\"}]?", body, re.IGNORECASE)

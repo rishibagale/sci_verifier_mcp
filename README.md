@@ -240,12 +240,28 @@ langchain_tools = get_langchain_tools()
 
 ---
 
-## Testing
+## Testing & Transport Options
 
-Run the test suite using `pytest`:
-
+### Transports (`stdio` & Streamable HTTP)
 ```bash
-uv run pytest -v
+# Default stdio transport (for Claude Desktop, Cline, Cursor, OpenCode)
+uv run sci-verifier-mcp
+
+# Streamable HTTP transport
+uv run sci-verifier-mcp --transport streamable-http --host 127.0.0.1 --port 8000
+```
+
+### Automated Tests & Quality Checks
+```bash
+# Default offline test suite
+uv run pytest -m "not live" -v
+
+# Opt-in live API integration checks (Crossref, OpenAlex, arXiv, Loogle, OPTIMADE)
+uv run pytest -m live -v
+
+# Lint and type-check
+uv run ruff check src tests
+uv run mypy src
 ```
 
 ---

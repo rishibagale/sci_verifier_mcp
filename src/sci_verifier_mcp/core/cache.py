@@ -3,8 +3,8 @@
 import json
 import sqlite3
 import time
-from typing import Any
 from pathlib import Path
+from typing import Any
 
 from sci_verifier_mcp.core import config
 

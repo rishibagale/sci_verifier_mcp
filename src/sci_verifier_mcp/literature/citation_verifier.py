@@ -2,6 +2,7 @@
 
 import re
 from typing import Any
+
 import httpx
 
 from sci_verifier_mcp.core.schemas import VerificationResult, VerificationStatus
@@ -25,6 +26,24 @@ def extract_surname(author_str: str) -> str:
     if "," in s:
         return s.split(",")[0].strip().lower()
     return s.split()[-1].strip().lower()
+
+
+def detect_crossref_retraction(crossref_data: dict[str, Any]) -> str | None:
+    """Detect retraction or withdrawal notices in Crossref work metadata."""
+    for upd in crossref_data.get("update-to") or []:
+        upd_type = str(upd.get("type", "")).lower()
+        if any(tok in upd_type for tok in ("retract", "withdraw")):
+            return f"Crossref update-to notice: {upd.get('type')} (DOI: {upd.get('DOI', 'unknown')})"
+
+    relation = crossref_data.get("relation") or {}
+    if relation.get("is-retracted-by"):
+        return f"Crossref relation is-retracted-by: {relation['is-retracted-by']}"
+
+    titles = crossref_data.get("title") or []
+    if titles and re.match(r"^\s*(RETRACTED|WITHDRAWN)\s*:", str(titles[0]), re.IGNORECASE):
+        return f"Title marked as retracted/withdrawn: '{titles[0]}'"
+
+    return None
 
 
 def compute_string_similarity(s1: str, s2: str) -> float:
@@ -64,26 +83,42 @@ async def verify_citation_async(
     sources: list[str] = []
     source_db = ""
 
-    # 1. DOI Lookup (Crossref)
+    retraction_reason: str | None = None
+
+    # 1. DOI Lookup (Crossref + OpenAlex cross-check / retraction check)
     if doi:
         clean_doi = doi.strip().removeprefix("https://doi.org/").removeprefix("http://doi.org/")
         crossref_data = await lit.lookup_crossref_doi(clean_doi, client=client)
-        if crossref_data is None:
+        openalex_data = await lit.lookup_openalex_doi(clean_doi, client=client)
+
+        if crossref_data is not None:
+            retraction_reason = detect_crossref_retraction(crossref_data)
+            if not retraction_reason and openalex_data and openalex_data.get("is_retracted"):
+                retraction_reason = "Flagged as retracted in OpenAlex (is_retracted=True)."
+
+            canonical_meta = {
+                "title": (crossref_data.get("title") or [""])[0],
+                "authors": [f"{a.get('given', '')} {a.get('family', '')}".strip() for a in crossref_data.get("author", [])],
+                "year": (crossref_data.get("issued", {}).get("date-parts") or [[None]])[0][0],
+                "doi": crossref_data.get("DOI"),
+                "url": f"https://doi.org/{crossref_data.get('DOI')}",
+                "is_retracted": bool(retraction_reason),
+            }
+            sources.append(canonical_meta["url"])
+            source_db = "Crossref"
+        elif openalex_data is not None:
+            if openalex_data.get("is_retracted"):
+                retraction_reason = "Flagged as retracted in OpenAlex (is_retracted=True)."
+            canonical_meta = openalex_data
+            sources.append(openalex_data.get("url") or f"https://doi.org/{clean_doi}")
+            source_db = "OpenAlex"
+        else:
             return VerificationResult(
                 status=VerificationStatus.FAILED,
-                summary=f"Fabricated or nonexistent DOI '{doi}'. Not found in Crossref registry.",
+                summary=f"Fabricated or nonexistent DOI '{doi}'. Not found in Crossref or OpenAlex.",
                 details={"doi": doi, "confidence": 0.0},
                 sources=[]
             )
-        canonical_meta = {
-            "title": (crossref_data.get("title") or [""])[0],
-            "authors": [f"{a.get('given', '')} {a.get('family', '')}".strip() for a in crossref_data.get("author", [])],
-            "year": (crossref_data.get("issued", {}).get("date-parts") or [[None]])[0][0],
-            "doi": crossref_data.get("DOI"),
-            "url": f"https://doi.org/{crossref_data.get('DOI')}",
-        }
-        sources.append(canonical_meta["url"])
-        source_db = "Crossref"
 
     # 2. arXiv ID Lookup
     elif arxiv_id:
@@ -99,7 +134,7 @@ async def verify_citation_async(
         sources.append(arxiv_data.get("url", f"https://arxiv.org/abs/{arxiv_id}"))
         source_db = "arXiv"
 
-    # 3. Title/Author Search
+    # 3. Title/Author Search (Crossref -> OpenAlex -> arXiv)
     elif title:
         search_items = await lit.search_crossref_bibliographic(
             title,
@@ -109,22 +144,31 @@ async def verify_citation_async(
         )
         if search_items:
             item = search_items[0]
+            retraction_reason = detect_crossref_retraction(item)
             canonical_meta = {
                 "title": (item.get("title") or [""])[0],
                 "authors": [f"{a.get('given', '')} {a.get('family', '')}".strip() for a in item.get("author", [])],
                 "year": (item.get("issued", {}).get("date-parts") or [[None]])[0][0],
                 "doi": item.get("DOI"),
                 "url": f"https://doi.org/{item.get('DOI')}",
+                "is_retracted": bool(retraction_reason),
             }
             sources.append(canonical_meta["url"])
             source_db = "Crossref"
         else:
-            # Fallback to arXiv search
-            arxiv_items = await lit.search_arxiv(title, limit=1, client=client)
-            if arxiv_items:
-                canonical_meta = arxiv_items[0]
+            oa_items = await lit.search_openalex(title, limit=1, client=client)
+            if oa_items:
+                canonical_meta = oa_items[0]
+                if canonical_meta.get("is_retracted"):
+                    retraction_reason = "Flagged as retracted in OpenAlex (is_retracted=True)."
                 sources.append(canonical_meta.get("url", ""))
-                source_db = "arXiv"
+                source_db = "OpenAlex"
+            else:
+                arxiv_items = await lit.search_arxiv(title, limit=1, client=client)
+                if arxiv_items:
+                    canonical_meta = arxiv_items[0]
+                    sources.append(canonical_meta.get("url", ""))
+                    source_db = "arXiv"
 
     if canonical_meta is None:
         return VerificationResult(
@@ -170,9 +214,19 @@ async def verify_citation_async(
         "source_registry": source_db,
         "confidence_score": confidence,
         "title_similarity": round(title_sim, 3),
+        "retracted": bool(retraction_reason),
+        "retraction_reason": retraction_reason,
         "claimed_metadata": {"title": title, "authors": authors, "year": year, "doi": doi, "arxiv_id": arxiv_id},
         "canonical_metadata": canonical_meta,
     }
+
+    if retraction_reason:
+        return VerificationResult(
+            status=VerificationStatus.FAILED,
+            summary=f"RETRACTED PAPER ({source_db}): '{ref_title}'. {retraction_reason}",
+            details=details,
+            sources=sources,
+        )
 
     if confidence >= 0.85:
         return VerificationResult(

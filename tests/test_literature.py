@@ -1,15 +1,13 @@
 """Unit tests for literature citation verification, bibliography auditing, and similarity search."""
 
-import respx
 import httpx
 import pytest
+import respx
 
 from sci_verifier_mcp.core.schemas import VerificationStatus
-from sci_verifier_mcp.literature.citation_verifier import verify_citation_async
 from sci_verifier_mcp.literature.bibliography_auditor import audit_bibliography_async
+from sci_verifier_mcp.literature.citation_verifier import verify_citation_async
 from sci_verifier_mcp.literature.similarity import find_similar_papers_async
-from sci_verifier_mcp.core.cache import cache
-
 
 MOCK_CROSSREF_WORK = {
     "message": {

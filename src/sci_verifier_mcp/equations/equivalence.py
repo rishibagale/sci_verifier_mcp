@@ -2,9 +2,12 @@
 
 import random
 from typing import Any
+
 import sympy
 
+from sci_verifier_mcp.core import config
 from sci_verifier_mcp.core.schemas import VerificationResult, VerificationStatus
+from sci_verifier_mcp.core.security import ExecutionTimeoutError, run_with_timeout
 from sci_verifier_mcp.equations.parser import parse_math_expression
 
 
@@ -20,6 +23,7 @@ def sample_domain_points(
     for _ in range(num_points):
         pt: dict[sympy.Symbol, complex] = {}
         for sym in symbols:
+            val: complex
             if sym.is_integer:
                 val = float(rng.randint(2, 20))
             elif sym.is_positive:
@@ -82,7 +86,7 @@ def check_equation_equivalence(
 
     for name, method in symbolic_methods:
         try:
-            reduced = method(diff)
+            reduced = run_with_timeout(method, config.DEFAULT_SYMBOLIC_TIMEOUT, diff)
             if reduced == 0:
                 return VerificationResult(
                     status=VerificationStatus.VERIFIED,
@@ -93,6 +97,17 @@ def check_equation_equivalence(
                         "rhs_parsed": str(rhs_expr),
                     }
                 )
+        except ExecutionTimeoutError:
+            return VerificationResult(
+                status=VerificationStatus.TIMEOUT,
+                summary=f"Symbolic equivalence check ({name}) timed out after {config.DEFAULT_SYMBOLIC_TIMEOUT}s.",
+                details={
+                    "timed_out_method": name,
+                    "timeout_seconds": config.DEFAULT_SYMBOLIC_TIMEOUT,
+                    "lhs_parsed": str(lhs_expr),
+                    "rhs_parsed": str(rhs_expr),
+                }
+            )
         except Exception:
             continue
 

@@ -2,15 +2,13 @@
 
 import json
 from pathlib import Path
-import pytest
 
+from sci_verifier_mcp.frameworks import get_all_tools
 from sci_verifier_mcp.installer import (
+    AUTO_APPROVE_TOOLS,
     generate_snippet_for_client,
     merge_config_into_file,
-    detect_installed_clients,
-    AUTO_APPROVE_TOOLS,
 )
-from sci_verifier_mcp.frameworks import get_all_tools
 
 
 def test_generate_snippet_cline():
@@ -78,8 +76,12 @@ def test_merge_config_zed_format(tmp_path: Path):
 
 def test_frameworks_tool_export():
     tool_map = get_all_tools()
-    assert len(tool_map) == 12
+    assert len(tool_map) == 21
     assert "check_equation_equivalence" in tool_map
+    assert "verify_ode_pde_solution" in tool_map
+    assert "search_lean_premises" in tool_map
+    assert "check_elastic_and_phonon_stability" in tool_map
+    assert "export_audit_certificate" in tool_map
 
     # Test invoking tool via framework callable
     res = tool_map["check_equation_equivalence"](lhs="a + b", rhs="b + a", format="sympy")

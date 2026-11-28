@@ -7,8 +7,8 @@ def test_fastmcp_server_initialization():
     assert mcp.name == "sci_verifier_mcp"
 
 
-def test_all_twelve_tools_registered():
-    # Verify that all 12 required tools are registered in FastMCP
+def test_all_registered_tools():
+    # Verify that all 21 tools are registered in FastMCP
     registered_tools = mcp._tool_manager.list_tools()
     tool_names = {t.name for t in registered_tools}
 
@@ -16,19 +16,28 @@ def test_all_twelve_tools_registered():
         "check_equation_equivalence",
         "check_dimensional_analysis",
         "check_smt_claim",
+        "verify_ode_pde_solution",
+        "check_limiting_cases",
+        "verify_simulation_invariants",
         "verify_lean4_proof",
+        "search_lean_premises",
         "simplify_tensor_expr",
         "validate_crystal_structure",
         "check_stoichiometry_and_valence",
         "verify_material_properties",
         "check_novel_structure_prior_art",
+        "check_elastic_and_phonon_stability",
+        "relax_and_score_mlip",
         "verify_citation",
         "audit_bibliography",
         "find_similar_papers",
+        "verify_claim_against_paper",
+        "track_recent_discoveries",
+        "export_audit_certificate",
     }
 
     assert expected_tools.issubset(tool_names), f"Missing tools: {expected_tools - tool_names}"
-    assert len(tool_names) == 12
+    assert len(tool_names) == 21
 
 
 def test_prompt_registered():

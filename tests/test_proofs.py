@@ -1,7 +1,7 @@
 """Unit tests for Lean 4 proof verification and Cadabra2 tensor simplifier."""
 
 from sci_verifier_mcp.core.schemas import VerificationStatus
-from sci_verifier_mcp.proofs.lean_runner import verify_lean4_proof, scan_for_cheat_tactics
+from sci_verifier_mcp.proofs.lean_runner import verify_lean4_proof
 from sci_verifier_mcp.proofs.tensor_simplifier import simplify_tensor_expr
 
 

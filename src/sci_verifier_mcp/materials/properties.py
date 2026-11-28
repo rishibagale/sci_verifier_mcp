@@ -1,6 +1,7 @@
 """Materials Project API client for verifying computed properties (band gap, stability, energy above hull)."""
 
 from typing import Any
+
 import httpx
 
 from sci_verifier_mcp.core import config

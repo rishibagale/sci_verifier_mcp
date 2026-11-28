@@ -1,6 +1,7 @@
 """OPTIMADE federated REST API client for crystal structure prior-art and novelty checking."""
 
 from typing import Any
+
 import httpx
 
 from sci_verifier_mcp.core import config
@@ -59,12 +60,19 @@ async def check_novel_structure_prior_art_async(
                     for s in structures:
                         attrs = s.get("attributes", {})
                         entry_id = s.get("id", "")
+                        sg_num = attrs.get("_cod_spacegroup_number") or (attrs.get("_mp_symmetry") or {}).get("number")
+                        if spacegroup_number is not None and sg_num is not None:
+                            try:
+                                if int(sg_num) != int(spacegroup_number):
+                                    continue
+                            except (TypeError, ValueError):
+                                pass
                         matched_item = {
                             "provider": provider["name"],
                             "id": entry_id,
                             "chemical_formula_descriptive": attrs.get("chemical_formula_descriptive"),
                             "chemical_formula_reduced": attrs.get("chemical_formula_reduced"),
-                            "space_group_symmetry": attrs.get("_cod_spacegroup_number") or attrs.get("_mp_symmetry", {}).get("number"),
+                            "space_group_symmetry": sg_num,
                             "nsites": attrs.get("nsites"),
                         }
                         matching_entries.append(matched_item)

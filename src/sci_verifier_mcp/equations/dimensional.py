@@ -1,21 +1,19 @@
 """Dimensional analysis verification using Pint supporting SI and natural units."""
 
-from typing import Any
+import contextlib
+
 import pint
 import sympy
-from sympy.parsing.sympy_parser import parse_expr, standard_transformations, implicit_multiplication_application
+from sympy.parsing.sympy_parser import implicit_multiplication_application, parse_expr, standard_transformations
 
 from sci_verifier_mcp.core.schemas import VerificationResult, VerificationStatus
 from sci_verifier_mcp.core.security import validate_safe_math_ast
 
-
 # Initialize Pint UnitRegistry
-ureg = pint.UnitRegistry()
+ureg: pint.UnitRegistry = pint.UnitRegistry()
 # Define materials science custom units if not present
-try:
+with contextlib.suppress(Exception):
     ureg.define("atom = count = atoms")
-except Exception:
-    pass
 
 TRANSFORMATIONS = standard_transformations + (implicit_multiplication_application,)
 
@@ -29,7 +27,10 @@ def get_term_dimensionality(
     if isinstance(node, sympy.Symbol):
         if node.name in unit_map:
             u = unit_map[node.name]
-            return dict(u.dimensionality)
+            return {
+                str(k): int(v.real) if isinstance(v, complex) else int(float(v))
+                for k, v in u.dimensionality.items()
+            }
         else:
             # Dimensionless symbol if not specified
             return {}
@@ -79,10 +80,10 @@ def compute_natural_dimension(dim_dict: dict[str, int]) -> int:
     [L] = [T] = [M]^-1 => Net mass dimension D = [mass] - [length] - [time] + [temperature].
     """
     m = dim_dict.get("[mass]", 0)
-    l = dim_dict.get("[length]", 0)
+    length = dim_dict.get("[length]", 0)
     t = dim_dict.get("[time]", 0)
     temp = dim_dict.get("[temperature]", 0)
-    return m - l - t + temp
+    return m - length - t + temp
 
 
 def check_dimensional_analysis(

@@ -1,5 +1,6 @@
 """Universal agent installer and configuration generator for all AI coding agents."""
 
+import contextlib
 import json
 import os
 import shutil
@@ -44,7 +45,6 @@ def get_client_config_paths() -> dict[str, list[Path]]:
     """Map client identifiers to possible configuration paths across operating systems."""
     home = Path.home()
     appdata = Path(os.environ.get("APPDATA", str(home / "AppData" / "Roaming")))
-    localappdata = Path(os.environ.get("LOCALAPPDATA", str(home / "AppData" / "Local")))
 
     return {
         "cline": [
@@ -151,10 +151,8 @@ def merge_config_into_file(file_path: Path, client_name: str, mode: str = "local
 
         # Create backup
         backup_path = file_path.with_suffix(file_path.suffix + ".bak")
-        try:
+        with contextlib.suppress(Exception):
             shutil.copy2(file_path, backup_path)
-        except Exception:
-            pass
 
     # Merge based on schema
     if cname in ("cline", "roo", "cursor", "windsurf", "claude"):

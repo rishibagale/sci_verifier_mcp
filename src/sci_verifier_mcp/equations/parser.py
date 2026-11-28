@@ -1,17 +1,17 @@
 """Safe parsing of mathematical expressions from LaTeX and SymPy strings."""
 
 from typing import Any
+
 import sympy
 from sympy.parsing.latex import parse_latex
 from sympy.parsing.sympy_parser import (
+    convert_xor,
+    implicit_multiplication_application,
     parse_expr,
     standard_transformations,
-    implicit_multiplication_application,
-    convert_xor,
 )
 
 from sci_verifier_mcp.core.security import validate_safe_math_ast
-
 
 TRANSFORMATIONS = standard_transformations + (
     implicit_multiplication_application,

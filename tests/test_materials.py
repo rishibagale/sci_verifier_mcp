@@ -1,15 +1,14 @@
 """Unit tests for materials science structure, stoichiometry, and property tools."""
 
-import respx
 import httpx
 import pytest
+import respx
 
 from sci_verifier_mcp.core.schemas import VerificationStatus
-from sci_verifier_mcp.materials.structure import validate_crystal_structure
-from sci_verifier_mcp.materials.stoichiometry import check_stoichiometry_and_valence
-from sci_verifier_mcp.materials.properties import verify_material_properties_async
 from sci_verifier_mcp.materials.optimade_client import check_novel_structure_prior_art_async
-
+from sci_verifier_mcp.materials.properties import verify_material_properties_async
+from sci_verifier_mcp.materials.stoichiometry import check_stoichiometry_and_valence
+from sci_verifier_mcp.materials.structure import validate_crystal_structure
 
 SAMPLE_VALID_CIF = """
 data_Si
@@ -137,7 +136,7 @@ async def test_verify_material_properties_missing_api_key():
 @respx.mock
 async def test_verify_material_properties_matched():
     # Mock Materials Project API response for mp-149
-    mock_route = respx.get("https://api.materialsproject.org/materials/summary/").mock(
+    respx.get("https://api.materialsproject.org/materials/summary/").mock(
         return_value=httpx.Response(
             200,
             json={

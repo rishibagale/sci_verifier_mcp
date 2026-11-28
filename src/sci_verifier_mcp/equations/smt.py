@@ -26,7 +26,7 @@ def ast_to_z3(node: ast.AST, z3_vars: dict[str, Any]) -> Any:
         elif isinstance(node.value, float):
             return z3.RealVal(node.value)
         else:
-            raise ValueError(f"Unsupported constant value: {node.value}")
+            raise ValueError(f"Unsupported constant value: {node.value!r}")
 
     elif isinstance(node, ast.Name):
         if node.id in z3_vars:
@@ -112,18 +112,15 @@ def build_z3_formula(claim: dict[str, Any], z3_vars: dict[str, Any]) -> Any:
         left_z3 = parse_safe_expr_to_z3(str(left_val), z3_vars) if isinstance(left_val, (str, int, float)) else build_z3_formula(left_val, z3_vars)
         right_z3 = parse_safe_expr_to_z3(str(right_val), z3_vars) if isinstance(right_val, (str, int, float)) else build_z3_formula(right_val, z3_vars)
 
-        if op == "<":
-            return left_z3 < right_z3
-        elif op == "<=":
-            return left_z3 <= right_z3
-        elif op == ">":
-            return left_z3 > right_z3
-        elif op == ">=":
-            return left_z3 >= right_z3
-        elif op == "==":
-            return left_z3 == right_z3
-        elif op == "!=":
-            return left_z3 != right_z3
+        cmp_ops = {
+            "<": lambda a, b: a < b,
+            "<=": lambda a, b: a <= b,
+            ">": lambda a, b: a > b,
+            ">=": lambda a, b: a >= b,
+            "==": lambda a, b: a == b,
+            "!=": lambda a, b: a != b,
+        }
+        return cmp_ops[op](left_z3, right_z3)
 
     elif op == "implies":
         premise = claim.get("premise")

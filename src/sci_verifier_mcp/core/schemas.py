@@ -1,11 +1,12 @@
 """Standardized response models across all verification tools."""
 
-from enum import Enum
+from enum import StrEnum
 from typing import Any
+
 from pydantic import BaseModel, Field
 
 
-class VerificationStatus(str, Enum):
+class VerificationStatus(StrEnum):
     VERIFIED = "verified"
     FAILED = "failed"
     PARTIAL_MATCH = "partial_match"

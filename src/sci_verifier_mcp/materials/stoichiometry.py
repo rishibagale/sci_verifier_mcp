@@ -1,7 +1,6 @@
 """Stoichiometry, oxidation state plausibility, and reaction mass balance verification."""
 
 import re
-from typing import Any
 from collections import defaultdict
 
 from sci_verifier_mcp.core.schemas import VerificationResult, VerificationStatus
@@ -165,17 +164,12 @@ def check_stoichiometry_and_valence(formula_or_reaction: str) -> VerificationRes
 
     # 2. Single chemical formula analysis
     try:
-        # If pymatgen is available, try using Composition
         try:
             from pymatgen.core import Composition
             comp = Composition(clean_input)
-            formula_clean = comp.reduced_formula
-            atom_counts = {str(k): float(v) for k, v in comp.fractional_composition.as_dict().items()}
+            element_counts = {str(k): float(v) for k, v in comp.get_el_amt_dict().items()}
         except Exception:
-            formula_clean = clean_input
-            atom_counts = parse_formula(clean_input)
-
-        element_counts = parse_formula(clean_input)
+            element_counts = parse_formula(clean_input)
     except Exception as e:
         return VerificationResult(
             status=VerificationStatus.ERROR,

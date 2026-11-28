@@ -73,18 +73,27 @@ def test_server_stdio_handshake():
             "check_equation_equivalence",
             "check_dimensional_analysis",
             "check_smt_claim",
+            "verify_ode_pde_solution",
+            "check_limiting_cases",
+            "verify_simulation_invariants",
             "verify_lean4_proof",
+            "search_lean_premises",
             "simplify_tensor_expr",
             "validate_crystal_structure",
             "check_stoichiometry_and_valence",
             "verify_material_properties",
             "check_novel_structure_prior_art",
+            "check_elastic_and_phonon_stability",
+            "relax_and_score_mlip",
             "verify_citation",
             "audit_bibliography",
             "find_similar_papers",
+            "verify_claim_against_paper",
+            "track_recent_discoveries",
+            "export_audit_certificate",
         }
         assert expected.issubset(tool_names), f"Missing tools over stdio: {expected - tool_names}"
-        assert len(tools_list) == 12
+        assert len(tools_list) == 21
 
         # 4. Send prompts/list request
         prompts_req = {
@@ -128,6 +137,9 @@ def test_server_stdio_handshake():
             (5, "check_equation_equivalence", {"lhs": "(x+1)**2", "rhs": "x**2 + 2*x + 1", "format": "sympy"}, "verified"),
             (6, "check_dimensional_analysis", {"equation": "E = m * c**2", "symbol_units": {"E": "joule", "m": "kg", "c": "m/s"}}, "verified"),
             (7, "check_stoichiometry_and_valence", {"formula_or_reaction": "2 H2 + O2 -> 2 H2O"}, "verified"),
+            (8, "verify_ode_pde_solution", {"equation": "y''(x) + y(x) = 0", "candidate_solution": "cos(x)", "boundary_conditions": {"y(0)": 1}}, "verified"),
+            (9, "check_limiting_cases", {"expr": "sin(x)/x", "limits": {"x": "0"}, "expected": {"x": "1"}}, "verified"),
+            (10, "verify_simulation_invariants", {"data": [10.0, 10.0, 10.0], "checks": ["conservation"]}, "verified"),
         ]
         for req_id, tool_name, arguments, expected_status in tool_calls:
             call_req = {
