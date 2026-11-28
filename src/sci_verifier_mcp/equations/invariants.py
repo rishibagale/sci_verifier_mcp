@@ -53,11 +53,10 @@ def verify_simulation_invariants(
 
             elif chk == "probability_norm":
                 raw_vals = data.get("probabilities", data) if isinstance(data, dict) else data
-                arr = np.asarray(raw_vals, dtype=float)
-                if arr.ndim == 1:
-                    arr = arr.reshape(1, -1)
-                min_entry = float(np.min(arr))
-                sums = np.sum(arr, axis=-1)
+                prob_arr = np.asarray(raw_vals, dtype=float)
+                prob_2d = prob_arr.reshape(1, -1) if prob_arr.ndim == 1 else prob_arr
+                min_entry = float(np.min(prob_2d))
+                sums = np.sum(prob_2d, axis=-1)
                 max_norm_err = float(np.max(np.abs(sums - 1.0)))
                 passed = (min_entry >= -tolerance) and (max_norm_err <= tolerance)
                 report[chk] = {
